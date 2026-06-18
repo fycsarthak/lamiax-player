@@ -73,7 +73,17 @@ export function NowPlaying({
         onProgressChange((audio.currentTime / audio.duration) * 100)
       }
     }
-    const handleEnded = () => onNext()
+    const handleEnded = () => {
+      if (typeof pendo !== "undefined") {
+        pendo.track("track_playback_completed", {
+          track_id: track.id,
+          track_title: track.title,
+          track_artist: track.artist,
+          track_duration_seconds: track.duration,
+        })
+      }
+      onNext()
+    }
 
     audio.addEventListener("timeupdate", handleTimeUpdate)
     audio.addEventListener("ended", handleEnded)
@@ -82,7 +92,7 @@ export function NowPlaying({
       audio.removeEventListener("timeupdate", handleTimeUpdate)
       audio.removeEventListener("ended", handleEnded)
     }
-  }, [onNext, onProgressChange])
+  }, [onNext, onProgressChange, track])
 
   // Clicking progress bar seeks the audio
   const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {

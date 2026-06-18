@@ -76,6 +76,16 @@ export default function LamiaXPlayer() {
         tags,
       }
       setMoodHistory((prev) => [newEntry, ...prev].slice(0, 10))
+
+      if (typeof pendo !== "undefined") {
+        pendo.track("mood_search_completed", {
+          mood_query: mood.trim(),
+          ai_generated_tags: tags.join(", "),
+          tags_count: tags.length,
+          tracks_returned_count: tracks?.length || 0,
+          success: !!(tracks && tracks.length > 0),
+        })
+      }
     } catch (err) {
       console.error("Search failed:", err)
     } finally {
@@ -83,8 +93,27 @@ export default function LamiaXPlayer() {
     }
   }
 
-  const toggleFavorite = (track: Track) => {
+  const toggleFavorite = (track: Track, source?: string) => {
     const isSaved = savedTracks.some((t) => t.id === track.id)
+    if (typeof pendo !== "undefined") {
+      if (isSaved) {
+        pendo.track("track_unsaved", {
+          track_id: track.id,
+          track_title: track.title,
+          track_artist: track.artist,
+          saved_tracks_count: savedTracks.length - 1,
+          removal_source: source || "player",
+        })
+      } else {
+        pendo.track("track_saved", {
+          track_id: track.id,
+          track_title: track.title,
+          track_artist: track.artist,
+          track_duration_seconds: track.duration,
+          saved_tracks_count: savedTracks.length + 1,
+        })
+      }
+    }
     setSavedTracks((prev) =>
       isSaved ? prev.filter((t) => t.id !== track.id) : [track, ...prev]
     )
@@ -93,7 +122,19 @@ export default function LamiaXPlayer() {
   // Next: push current to history, play first in queue
   const playNext = () => {
     if (queue.length === 0) return
-    if (currentTrack) setHistory((prev) => [currentTrack, ...prev].slice(0, 20))
+    if (currentTrack) {
+      if (typeof pendo !== "undefined") {
+        pendo.track("track_skipped", {
+          skipped_track_id: currentTrack.id,
+          skipped_track_title: currentTrack.title,
+          skipped_track_artist: currentTrack.artist,
+          skip_direction: "forward",
+          progress_percent_at_skip: Math.round(progress),
+          queue_remaining_count: queue.length,
+        })
+      }
+      setHistory((prev) => [currentTrack, ...prev].slice(0, 20))
+    }
     setCurrentTrack(queue[0])
     setQueue((prev) => prev.slice(1))
     setProgress(0)
@@ -105,8 +146,20 @@ export default function LamiaXPlayer() {
       setProgress(0)
       return
     }
-    // Push current track back to front of queue
-    if (currentTrack) setQueue((prev) => [currentTrack, ...prev])
+    if (currentTrack) {
+      if (typeof pendo !== "undefined") {
+        pendo.track("track_skipped", {
+          skipped_track_id: currentTrack.id,
+          skipped_track_title: currentTrack.title,
+          skipped_track_artist: currentTrack.artist,
+          skip_direction: "backward",
+          progress_percent_at_skip: Math.round(progress),
+          queue_remaining_count: queue.length,
+        })
+      }
+      // Push current track back to front of queue
+      setQueue((prev) => [currentTrack, ...prev])
+    }
     setCurrentTrack(history[0])
     setHistory((prev) => prev.slice(1))
     setProgress(0)
@@ -114,6 +167,16 @@ export default function LamiaXPlayer() {
 
   // Click a track in the queue to play it immediately
   const playFromQueue = (track: Track, index: number) => {
+    if (typeof pendo !== "undefined") {
+      pendo.track("queue_track_selected", {
+        selected_track_id: track.id,
+        selected_track_title: track.title,
+        selected_track_artist: track.artist,
+        queue_position: index + 1,
+        queue_total_count: queue.length,
+        previous_track_id: currentTrack?.id || "",
+      })
+    }
     if (currentTrack) setHistory((prev) => [currentTrack, ...prev].slice(0, 20))
     setCurrentTrack(track)
     // Remove the clicked track from the queue, keep everything after it
@@ -144,7 +207,7 @@ export default function LamiaXPlayer() {
         onProgressChange={setProgress}
         onPlayFromQueue={playFromQueue}
       />
-      <RightSidebar savedTracks={savedTracks} onRemove={toggleFavorite} />
+      <RightSidebar savedTracks={savedTracks} onRemove={(track) => toggleFavorite(track, "sidebar")} />
     </div>
   )
 }
