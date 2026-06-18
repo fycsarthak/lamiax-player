@@ -21,7 +21,8 @@ function formatTime(date: Date): string {
 
 export function LeftSidebar({ moodHistory }: LeftSidebarProps) {
   return (
-    <aside className="w-[250px] h-full flex flex-col border-r border-white/5 bg-gradient-to-b from-purple-950/20 to-transparent">
+    // hidden on mobile, visible from md breakpoint up
+    <aside className="hidden md:flex w-[250px] h-full flex-col border-r border-white/5 bg-gradient-to-b from-purple-950/20 to-transparent">
       {/* Logo */}
       <div className="p-6 flex items-center gap-3">
         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-purple-500/25">

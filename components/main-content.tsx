@@ -47,13 +47,13 @@ export function MainContent({
   }
 
   return (
-    // Removed justify-center — content now stacks from top so search bar never scrolls off
-    <main className="flex-1 h-full flex flex-col items-center px-8 pt-10 pb-6 overflow-y-auto">
+    <main className="flex-1 h-full flex flex-col items-center px-4 md:px-8 pt-8 md:pt-10 pb-28 md:pb-6 overflow-y-auto">
+      {/*                                                         ↑ pb-28 on mobile clears the bottom nav bar */}
       <div className="w-full max-w-lg space-y-6">
 
         {/* Heading */}
         <div className="text-center space-y-2">
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-balance">
+          <h1 className="text-2xl md:text-4xl font-bold tracking-tight">
             What&apos;s your{" "}
             <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
               vibe
@@ -75,9 +75,9 @@ export function MainContent({
                 type="text"
                 value={searchValue}
                 onChange={(e) => setSearchValue(e.target.value)}
-                placeholder="e.g. studying at 2am, feeling nostalgic, post workout..."
+                placeholder="e.g. studying at 2am, feeling nostalgic..."
                 disabled={isLoading}
-                className="w-full pl-12 pr-4 py-4 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl text-white placeholder:text-white/30 focus:outline-none focus:border-purple-500/50 transition-all duration-300 disabled:opacity-50"
+                className="w-full pl-12 pr-4 py-4 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl text-white placeholder:text-white/30 focus:outline-none focus:border-purple-500/50 transition-all duration-300 disabled:opacity-50 text-sm md:text-base"
               />
             </div>
           </div>

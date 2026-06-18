@@ -17,7 +17,8 @@ function formatDuration(seconds: number): string {
 
 export function RightSidebar({ savedTracks, onRemove }: RightSidebarProps) {
   return (
-    <aside className="w-[250px] h-full flex flex-col border-l border-white/5 bg-gradient-to-b from-cyan-950/20 to-transparent">
+    // hidden on mobile, visible from md breakpoint up
+    <aside className="hidden md:flex w-[250px] h-full flex-col border-l border-white/5 bg-gradient-to-b from-cyan-950/20 to-transparent">
       {/* Header */}
       <div className="p-6 flex items-center gap-2">
         <Heart className="w-4 h-4 text-cyan-400 fill-cyan-400" />
