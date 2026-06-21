@@ -4,6 +4,7 @@ import { useState } from "react"
 import { LeftSidebar } from "@/components/left-sidebar"
 import { RightSidebar } from "@/components/right-sidebar"
 import { MainContent } from "@/components/main-content"
+import { MobileNav } from "@/components/mobile-nav"
 import { Track, MoodEntry } from "@/lib/types"
 
 const MOOD_EMOJIS: Record<string, string> = {
@@ -35,7 +36,7 @@ const MOOD_EMOJIS: Record<string, string> = {
 export default function LamiaXPlayer() {
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null)
   const [queue, setQueue] = useState<Track[]>([])
-  const [history, setHistory] = useState<Track[]>([])   // ← track history for previous btn
+  const [history, setHistory] = useState<Track[]>([])
   const [savedTracks, setSavedTracks] = useState<Track[]>([])
   const [moodHistory, setMoodHistory] = useState<MoodEntry[]>([])
   const [isPlaying, setIsPlaying] = useState(false)
@@ -58,7 +59,7 @@ export default function LamiaXPlayer() {
       const { tracks } = await tracksRes.json()
 
       if (tracks && tracks.length > 0) {
-        setHistory([])           // reset history on new search
+        setHistory([])
         setCurrentTrack(tracks[0])
         setQueue(tracks.slice(1))
         setIsPlaying(true)
@@ -119,7 +120,6 @@ export default function LamiaXPlayer() {
     )
   }
 
-  // Next: push current to history, play first in queue
   const playNext = () => {
     if (queue.length === 0) return
     if (currentTrack) {
@@ -140,7 +140,6 @@ export default function LamiaXPlayer() {
     setProgress(0)
   }
 
-  // Previous: if history exists go back, otherwise just restart
   const playPrevious = () => {
     if (history.length === 0) {
       setProgress(0)
@@ -157,7 +156,6 @@ export default function LamiaXPlayer() {
           queue_remaining_count: queue.length,
         })
       }
-      // Push current track back to front of queue
       setQueue((prev) => [currentTrack, ...prev])
     }
     setCurrentTrack(history[0])
@@ -165,7 +163,6 @@ export default function LamiaXPlayer() {
     setProgress(0)
   }
 
-  // Click a track in the queue to play it immediately
   const playFromQueue = (track: Track, index: number) => {
     if (typeof pendo !== "undefined") {
       pendo.track("queue_track_selected", {
@@ -179,7 +176,6 @@ export default function LamiaXPlayer() {
     }
     if (currentTrack) setHistory((prev) => [currentTrack, ...prev].slice(0, 20))
     setCurrentTrack(track)
-    // Remove the clicked track from the queue, keep everything after it
     setQueue((prev) => prev.filter((_, i) => i !== index))
     setProgress(0)
     setIsPlaying(true)
@@ -208,6 +204,13 @@ export default function LamiaXPlayer() {
         onPlayFromQueue={playFromQueue}
       />
       <RightSidebar savedTracks={savedTracks} onRemove={(track) => toggleFavorite(track, "sidebar")} />
+
+      {/* Mobile only — bottom nav with slide-up drawers */}
+      <MobileNav
+        moodHistory={moodHistory}
+        savedTracks={savedTracks}
+        onRemove={toggleFavorite}
+      />
     </div>
   )
 }
